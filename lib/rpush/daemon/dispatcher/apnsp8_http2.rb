@@ -35,6 +35,7 @@ module Rpush
           url = URLS[app.environment.to_sym]
           client = NetHttp2::Client.new(url, connect_timeout: DEFAULT_TIMEOUT)
           client.on(:error) do |error|
+            log_error("NetHttp2 failed for #{url}. App #{app}")
             log_error(error)
             reflect(:error, error)
           end
