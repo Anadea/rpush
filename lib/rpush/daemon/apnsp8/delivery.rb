@@ -7,6 +7,7 @@ module Rpush
 
       class Delivery < Rpush::Daemon::Delivery
         RETRYABLE_CODES = [ 429, 500, 503 ]
+        DEFAULT_TIMEOUT = 5
 
         def initialize(app, http2_client, token_provider, batch)
           @app = app
@@ -22,8 +23,10 @@ module Rpush
           end
 
           # Send all preprocessed requests at once
-          @client.join
-        rescue Errno::ECONNREFUSED, SocketError, HTTP2::Error::StreamLimitExceeded => error
+          Timeout.timeout(DEFAULT_TIMEOUT) do
+            @client.join
+          end
+        rescue Timeout::Error, Errno::ECONNREFUSED, SocketError, HTTP2::Error::StreamLimitExceeded => error
           # TODO restart connection when StreamLimitExceeded
           mark_batch_retryable(Time.now + 10.seconds, error)
           raise
