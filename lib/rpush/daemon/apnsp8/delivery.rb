@@ -26,8 +26,12 @@ module Rpush
           Timeout.timeout(DEFAULT_TIMEOUT) do
             @client.join
           end
-        rescue Timeout::Error, Errno::ECONNREFUSED, SocketError, HTTP2::Error::StreamLimitExceeded => error
+        rescue Errno::ECONNREFUSED, SocketError, HTTP2::Error::StreamLimitExceeded => error
           # TODO restart connection when StreamLimitExceeded
+          mark_batch_retryable(Time.now + 10.seconds, error)
+          raise
+        rescue Timeout::Error => error
+          @client.close
           mark_batch_retryable(Time.now + 10.seconds, error)
           raise
         rescue StandardError => error

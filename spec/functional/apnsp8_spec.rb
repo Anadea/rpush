@@ -89,7 +89,7 @@ KwfcsEfw
 
   context 'when one of notifications requests timed out' do
     it 'delivers one notification successfully, and retries timed out one' do
-      notification1 = create_notification
+      notification = create_notification
 
       expect(fake_client).to receive(:join) { raise(Timeout::Error) }
       expect(fake_http2_request).to receive(:on).with(:close)
@@ -99,11 +99,11 @@ KwfcsEfw
         .to receive(:prepare_request)
         .and_return(fake_http2_request)
 
-      expect(notification1.delivered).to be_falsey
+      expect(notification.delivered).to be_falsey
 
       Rpush.push
 
-      expect(notification1.reload.retries).to be > 0
+      expect(notification.reload.retries).to be > 0
     end
   end
 end
