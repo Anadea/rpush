@@ -32,7 +32,7 @@ module Rpush
           raise
         rescue Timeout::Error => error
           @client.close
-          mark_batch_retryable(Time.now + 10.seconds, error)
+          mark_batch_retryable(Time.now + 5.seconds, error)
           raise
         rescue StandardError => error
           mark_batch_failed(error)
